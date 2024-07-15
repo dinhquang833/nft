@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create NFT</title>
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+</head>
+<body>
+    <button onclick="connectWallet()">Connect</button>
+    <button onclick="mintNft()">Mint Nft</button>
+    <!-- <button onclick="mintNftPriv()">Mint Nft with priv key</button> -->
+    <input type="file" id="fileInput"/>
+
+    <script>
+        //1.auto connect 
+        (async () => {
+            await window.phantom.solana.connect();
+            publicKey = window.phantom.solana.publicKey.toBase58();
+            console.log(publicKey);
+        })();
+
+        
+        
+
+        //2. manual connect
+        const connectWallet = async () => {
+            await window.phantom.solana.connect();
+
+            publicKey = window.phantom.solana.publicKey.toBase58();
+            console.log(publicKey);
+        }
+
+
+        //mint nft
+        const PRIV_KEY = "8tvBdCECmKMnQXtM";
+
+        const toTransaction = (encodedTransaction) => solanaWeb3.Transaction.from(Uint8Array.from(atob(encodedTransaction), c => c.charCodeAt(0)));
+
+
+        const mintNft = async () => {
+        var myHeaders = new Headers();
+        myHeaders.append("x-api-key", PRIV_KEY);
+        myHeaders.append("Content-Type", "application/json");
+
+
+const fileInput = document.querySelector("#fileInput");
+
+
+
+var raw = JSON.stringify({
+  "network": "devnet",
+  "wallet": publicKey,
+  "master_nft_address": "4ra2ePdzTJt7oQeL4txCqpNq16PrsxnzL1DWAi4DkjWR",
+  "receiver": "BFefyp7jNF5Xq2A4JDLLFFGpxLq5oPEFKBAQ46KJHW2R",
+  "transfer_authority": true,
+  "message": "Thank you",
+  "file": fileInput.files[0],
+  "data": fileInput.files[0],
+  "service_charge": {
+    "receiver": "sxm1BiYrJmSYZP3qUUcSLkzoPwKMKeEKFFoZ7c9Heg7",
+    "token": "HqGEZaxqpoKgDqoRaKQYEnttWi1ptnB4PhKU4PCLHxah",
+    "amount": 1
+  },
+  "fee_payer": "5KW2twHzRsAaiLeEx4zYNV35CV2hRrZGw7NYbwMfL4a2"
+});
+
+var requestOptions = {
+  method: 'POST',
+  headers: myHeaders,
+  body: raw,
+  redirect: 'follow'
+};
+
+fetch("https://api.shyft.to/sol/v1/nft/mint_detach", requestOptions)
+  .then(async response => {
+    let res = await response.json();
+    let transaction = toTransaction(res.result.encoded_transaction);
+
+    const signedTransaction = await window.phantom.solana.signTransaction(transaction);
+    const connection = new solanaWeb3.Connection("https://api.devnet.solana.com");
+    const signature = await connection.sendRawTransaction(signedTransaction.serialize());
+    
+  })
+  .catch(error => console.log('error', error));
+
+        }
+
+
+
+
+
+
+//mint priv key
+const PRIV_KEY_WALLET = "53GUM75iFFwaY8jsk3tE2g6YKFaz7mYUh32HTJ4vytHyv9mNugrQQPrSY7SHQUcfvzgqmGacyohmvAusefb4BfeP"
+        const mintNftPriv = async () => {
+            var myHeaders = new Headers();
+myHeaders.append("x-api-key", PRIV_KEY);
+
+
+const fileInput = document.querySelector("#fileInput");
+
+
+
+var formdata = new FormData();
+formdata.append("network", "devnet");
+formdata.append("private_key", PRIV_KEY_WALLET);
+formdata.append("name", "FPOLY NFT");
+formdata.append("symbol", "FPL");
+formdata.append("description", "FPL Token Shyft makes Web3 so easy!");
+formdata.append("attributes", '[{"trait_type":"dev power","value":"over 900"}]');
+formdata.append("external_url", "https://shyft.to");
+formdata.append("max_supply", "0");
+formdata.append("royalty", "5");
+formdata.append("file", fileInput.files[0]);
+formdata.append("data", fileInput.files[0]);
+formdata.append("receiver", publicKey);
+formdata.append('service_charge', '{ "receiver": "499qpPLdqgvVeGvvNjsWi27QHpC8GPkPfuL5Cn2DtZJe",  "token": "DjMA5cCK95X333t7SgkpsG5vC9wMk7u9JV4w8qipvFE8",  "amount": 0.01}');
+
+var requestOptions = {
+  method: 'POST',
+  headers: myHeaders,
+  body: formdata,
+  redirect: 'follow'
+};
+
+    fetch("https://api.shyft.to/sol/v1/nft/create", requestOptions)
+    .then(async response =>{
+        
+    })
+    .catch(error => console.log('error', error));
+
+        }
+        
+    </script>
+</body>
+</html>
